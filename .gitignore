@@ -57,3 +57,4 @@ dkms.conf
 *.VC.VC.opendb
 Makefile
 *.mk
+/out/
