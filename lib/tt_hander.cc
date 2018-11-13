@@ -175,7 +175,7 @@ bool TaskTopHandler::GetAllStatString(std::list<int>& pids, std::string & sys_st
   return true;
 }
 bool TaskTopHandler::GetSystemStatString(std::string & stat_data) {
-  std::ifstream ifs(task_top::global::g_system_proc_path_, std::ios::in);
+  std::ifstream ifs(task_top::global::g_system_stat_path_, std::ios::in);
   if (!ifs.is_open()) {
     LogError("open cpu stat file: %s failed\n", task_top::global::g_system_proc_path_.c_str());
     return false;
