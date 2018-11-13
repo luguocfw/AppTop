@@ -11,13 +11,9 @@
 #include "tt_global.h"
 #include "tt_path.h"
 
-<<<<<<< HEAD
-#include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
-=======
 #include <dirent.h>
->>>>>>> e306d64bbf2a36a579782c3f6d51de5a551d9861
 #include <string>
 #include <fstream>
 #include <sstream>
