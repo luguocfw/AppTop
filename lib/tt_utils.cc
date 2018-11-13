@@ -11,7 +11,7 @@
 #include "tt_global.h"
 #include "tt_path.h"
 
-#include <direct.h>
+#include <dirent.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -76,7 +76,7 @@ int AppTaskScan::GetTids(const std::string & app_proc_path, std::list<int>& tids
       std::string tid_str = ent->d_name;
       if (tid_str != "."&&tid_str != "..") {
         int tid = std::stoi(tid_str);
-        LogInfo("get pid %d application tid:%d \n", pid, tid);
+        LogInfo("get application path:%s tid:%d \n", app_proc_path.c_str(), tid);
         tids.push_back(tid);
       }
     }
@@ -102,7 +102,7 @@ int AppTaskScan::GetTids(const std::string &app_proc_path, std::list<std::string
     if (ent->d_reclen == 16) {
       std::string tid_str = ent->d_name;
       if (tid_str != "."&&tid_str != "..") {
-        LogInfo("get pid %d application tid:%s \n", pid, tid_str.c_str());
+        LogInfo("get application path:%s tid:%s \n", app_proc_path.c_str(), tid_str.c_str());
         tid_folders.push_back(tid_str);
       }
     }

@@ -13,7 +13,7 @@ bool log_is_init_ = false;
 pthread_mutex_t log_mux_ = PTHREAD_MUTEX_INITIALIZER;
 LogAttr log_attr_;
 
-int LogInit(const LOG_ATTR_S *attr) {
+int LogInit(const LogAttr *attr) {
   int ret;
   pthread_mutex_lock(&log_mux_);
   if (log_is_init_ == true) {
