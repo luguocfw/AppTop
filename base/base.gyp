@@ -16,6 +16,8 @@
       'sources':[
         'tt_log.cc',
         'tt_log.h',
+        'tt_path.cc',
+        'tt_path.h',
       ],
       'include_dirs': [
         '<(PRO_ROOT)/base',
