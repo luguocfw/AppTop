@@ -15,6 +15,9 @@ Path::Path(const std::string & path_base) {
     path_ += path_delimiter_;
   }
 }
+std::string Path::Pathname() {
+  return path_;
+}
 void Path::AppendFolder(const std::string & folder) {
   path_ += folder;
   if (path_.rfind(path_delimiter_) != path_.size() - 1) {

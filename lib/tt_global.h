@@ -14,6 +14,9 @@ namespace global {
 const std::string g_system_stat_path_ = "/proc/stat";
 const std::string g_system_proc_path_ = "/proc";
 const std::string g_task_folder_ = "task";
+const std::string g_app_and_task_name_file_ = "comm";
+const std::string g_stat_filename_ = "stat";
+const std::string g_noname_string_ = "NoName";
 }
 }
 

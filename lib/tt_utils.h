@@ -28,15 +28,20 @@ typedef struct {
   long                cstime;
 }AppAndTaskStatData;
 class SystemStatResolv {
+public:
   static int Resolv(const std::string &file_data, SystemStatData &stat_data_out);
 };
 class AppAndTaskStatResolv {
+public:
   static int Resolv(const std::string &file_data, AppAndTaskStatData &stat_data_out);
 };
 class AppTaskScan {
+public:
   static int GetTids(int pid, std::list<int> &tids);
-  static int GetTids(const std::string &app_stat_path, std::list<int> &tids);
-  static int GetTids(const std::string &app_stat_path, std::list<std::string> &tid_folders);
+  static int GetTids(const std::string &app_proc_path, std::list<int> &tids);
+  static int GetTids(const std::string &app_proc_path, std::list<std::string> &tid_folders);
+  static std::string GetThrName(int pid, int tid);
+  static std::string GetAppName(int pid);
 };
 }
 #endif

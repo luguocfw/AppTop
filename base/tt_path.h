@@ -14,6 +14,7 @@ class Path {
 public:
   Path(const std::string &path_base);
 public:
+  std::string Pathname();
   void AppendFolder(const std::string &folder);
   void SetFile(const std::string &file_name);
   void DeletePath(int level = 0);

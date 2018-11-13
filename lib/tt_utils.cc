@@ -8,6 +8,14 @@
 */
 #include "tt_utils.h"
 #include "tt_log.h"
+#include "tt_global.h"
+#include "tt_path.h"
+
+#include <direct.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+
 namespace task_top {
 int SystemStatResolv::Resolv(const std::string & file_data, SystemStatData & stat_data_out) {
   int param_num = 7;
@@ -47,12 +55,90 @@ int AppAndTaskStatResolv::Resolv(const std::string & file_data, AppAndTaskStatDa
   return 0;
 }
 int AppTaskScan::GetTids(int pid, std::list<int>& tids) {
+  std::string base_path = task_top::global::g_system_proc_path_;
+  Path pathname(base_path);
+  pathname.AppendFolder(std::to_string(pid));
+  return GetTids(pathname.Pathname(), tids);
+}
+int AppTaskScan::GetTids(const std::string & app_proc_path, std::list<int>& tids) {
+  Path pathname(app_proc_path);
+  pathname.AppendFolder(task_top::global::g_task_folder_);
+  struct dirent *ent = NULL;
+  DIR *p_dir;
+  p_dir = opendir(pathname.Pathname().c_str());
+  if (p_dir == NULL) {
+    LogError("open dir :%s failed\n", pathname.Pathname().c_str());
+    return -1;
+  }
+  tids.clear();
+  while ((ent = readdir(p_dir)) != NULL) {
+    if (ent->d_reclen == 16) {
+      std::string tid_str = ent->d_name;
+      if (tid_str != "."&&tid_str != "..") {
+        int tid = std::stoi(tid_str);
+        LogInfo("get pid %d application tid:%d \n", pid, tid);
+        tids.push_back(tid);
+      }
+    }
+  }
+  closedir(p_dir);
+  if (tids.size() == 0) {
+    return -2;
+  }
   return 0;
 }
-int AppTaskScan::GetTids(const std::string & app_stat_path, std::list<int>& tids) {
+int AppTaskScan::GetTids(const std::string &app_proc_path, std::list<std::string> &tid_folders) {
+  Path pathname(app_proc_path);
+  pathname.AppendFolder(task_top::global::g_task_folder_);
+  struct dirent *ent = NULL;
+  DIR *p_dir;
+  p_dir = opendir(pathname.Pathname().c_str());
+  if (p_dir == NULL) {
+    LogError("open dir :%s failed\n", pathname.Pathname().c_str());
+    return -1;
+  }
+  tid_folders.clear();
+  while ((ent = readdir(p_dir)) != NULL) {
+    if (ent->d_reclen == 16) {
+      std::string tid_str = ent->d_name;
+      if (tid_str != "."&&tid_str != "..") {
+        LogInfo("get pid %d application tid:%s \n", pid, tid_str.c_str());
+        tid_folders.push_back(tid_str);
+      }
+    }
+  }
+  closedir(p_dir);
+  if (tid_folders.size() == 0) {
+    return -2;
+  }
   return 0;
 }
-int AppTaskScan::GetTids(const std::string &app_stat_path, std::list<std::string> &tid_folders) {
- 
+std::string AppTaskScan::GetThrName(int pid, int tid) {
+  Path path(task_top::global::g_system_proc_path_);
+  path.AppendFolder(std::to_string(pid));
+  path.AppendFolder(task_top::global::g_task_folder_);
+  path.AppendFolder(std::to_string(tid));
+  path.SetFile(task_top::global::g_app_and_task_name_file_);
+  std::ifstream ifs(path.Pathname());
+  if (!ifs.is_open()) {
+    return task_top::global::g_noname_string_;
+  }
+  std::stringstream ss;
+  ss << ifs.rdbuf();
+  std::string name = ss.str();
+  return name;
+}
+std::string AppTaskScan::GetAppName(int pid) {
+  Path path(task_top::global::g_system_proc_path_);
+  path.AppendFolder(std::to_string(pid));
+  path.SetFile(task_top::global::g_app_and_task_name_file_);
+  std::ifstream ifs(path.Pathname());
+  if (!ifs.is_open()) {
+    return task_top::global::g_noname_string_;
+  }
+  std::stringstream ss;
+  ss << ifs.rdbuf();
+  std::string name = ss.str();
+  return name;
 }
 }
