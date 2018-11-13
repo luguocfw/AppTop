@@ -34,9 +34,9 @@ bool AllIsNum(const std::string &str) {
 }
 
 void DisplayCpuInfo(task_top::SystemCpuInfo &sys_cpu, std::list<task_top::AppCpuInfoAll> &apps_cpu) {
-  printf("system:\n\tUSER:%.2l%%\tSYS:%.2f%%\tNIC:%.2f%%\tIDLE:%.2f%%\n\tIO:%.2f%%\tIRQ:%.2f%%\tSIRQ:%.2f%%\n",
+  printf("system:\n\tUSER:%.2f%%\tSYS:%.2f%%\tNIC:%.2f%%\tIDLE:%.2f%%\n\tIO:%.2f%%\tIRQ:%.2f%%\tSIRQ:%.2f%%\n",
     sys_cpu.user_ * 100, sys_cpu.sys_ * 100, sys_cpu.nic_ * 100,
-    sys_cpu.idle_ * 100, sys_cpu.io_ * 100, sys_cpu.irq_, sys_cpu.sirq_);
+    sys_cpu.idle_ * 100, sys_cpu.io_ * 100, sys_cpu.irq_ * 100, sys_cpu.sirq_*100);
   if (apps_cpu.size() != 0) {
     printf("-----------------------apps cpu info---------------------\n");
     printf("PID\t\tNAME\t\tCPU\n");

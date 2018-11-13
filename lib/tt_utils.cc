@@ -148,15 +148,16 @@ int stoi(const std::string & s) {
 }
 std::string to_string(int val) {
   char *buf = NULL;
-  int temp = val;
   int size;
-  if (temp < 0) {
-    temp = -temp;
+  int temp;
+  if (val < 0) {
+    temp = -val;
     size = 2;
   } else {
+    temp = val;
     size = 1;
   }
-  for (; val > 0; val = val / 10, size++);
+  for (; temp > 0; temp = temp / 10, size++);
   size++;
   buf = (char *)malloc(size);
   if (buf == NULL) {
