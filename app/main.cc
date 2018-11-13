@@ -77,14 +77,14 @@ int main(int argc, char* argv[]) {
         Usage();
         return -2;
       }
-      pids.push_back(std::stoi(pid));
+      pids.push_back(task_top::stoi(pid));
     } else if (option == "-d") {
       std::string sec = argv[i + 1];
       if (!AllIsNum(sec)) {
         Usage();
         return -3;
       }
-      loop_time = stoi(sec);
+      loop_time = task_top::stoi(sec);
     } else {
       printf("unknow option: %s\n", argv[i]);
       Usage();

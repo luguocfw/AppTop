@@ -12,6 +12,8 @@
 #include "tt_path.h"
 
 #include <direct.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -57,7 +59,7 @@ int AppAndTaskStatResolv::Resolv(const std::string & file_data, AppAndTaskStatDa
 int AppTaskScan::GetTids(int pid, std::list<int>& tids) {
   std::string base_path = task_top::global::g_system_proc_path_;
   Path pathname(base_path);
-  pathname.AppendFolder(std::to_string(pid));
+  pathname.AppendFolder(task_top::to_string(pid));
   return GetTids(pathname.Pathname(), tids);
 }
 int AppTaskScan::GetTids(const std::string & app_proc_path, std::list<int>& tids) {
@@ -75,7 +77,7 @@ int AppTaskScan::GetTids(const std::string & app_proc_path, std::list<int>& tids
     if (ent->d_reclen == 16) {
       std::string tid_str = ent->d_name;
       if (tid_str != "."&&tid_str != "..") {
-        int tid = std::stoi(tid_str);
+        int tid = task_top::stoi(tid_str);
         LogInfo("get pid %d application tid:%d \n", pid, tid);
         tids.push_back(tid);
       }
@@ -115,9 +117,9 @@ int AppTaskScan::GetTids(const std::string &app_proc_path, std::list<std::string
 }
 std::string AppTaskScan::GetThrName(int pid, int tid) {
   Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(std::to_string(pid));
+  path.AppendFolder(task_top::to_string(pid));
   path.AppendFolder(task_top::global::g_task_folder_);
-  path.AppendFolder(std::to_string(tid));
+  path.AppendFolder(task_top::to_string(tid));
   path.SetFile(task_top::global::g_app_and_task_name_file_);
   std::ifstream ifs(path.Pathname());
   if (!ifs.is_open()) {
@@ -130,7 +132,7 @@ std::string AppTaskScan::GetThrName(int pid, int tid) {
 }
 std::string AppTaskScan::GetAppName(int pid) {
   Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(std::to_string(pid));
+  path.AppendFolder(task_top::to_string(pid));
   path.SetFile(task_top::global::g_app_and_task_name_file_);
   std::ifstream ifs(path.Pathname());
   if (!ifs.is_open()) {
@@ -140,5 +142,30 @@ std::string AppTaskScan::GetAppName(int pid) {
   ss << ifs.rdbuf();
   std::string name = ss.str();
   return name;
+}
+int stoi(const std::string & s) {
+  return atoi(s.c_str());
+}
+std::string to_string(int val) {
+  char *buf = NULL;
+  int temp = val;
+  int size;
+  if (temp < 0) {
+    temp = -temp;
+    size = 2;
+  } else {
+    size = 1;
+  }
+  for (; val > 0; val = val / 10, size++);
+  size++;
+  buf = (char *)malloc(size);
+  if (buf == NULL) {
+    return "";
+  }
+  memset(buf, 0, size);
+  sprintf(buf, "%d", val);
+  std::string re(buf);
+  free(buf);
+  return re;
 }
 }

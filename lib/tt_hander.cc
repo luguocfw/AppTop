@@ -190,15 +190,15 @@ bool TaskTopHandler::GetSystemStatString(std::string & stat_data) {
 }
 bool TaskTopHandler::GetOneAppStatString(int pid, std::string & stat_data) {
   Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(std::to_string(pid));
+  path.AppendFolder(task_top::to_string(pid));
   path.SetFile(task_top::global::g_stat_filename_);
   return GetOneAppOrTaskStatString(path.Pathname(), stat_data);
 }
 bool TaskTopHandler::GetOneTaskStatString(int pid, int tid, std::string & stat_data) {
   Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(std::to_string(pid));
+  path.AppendFolder(task_top::to_string(pid));
   path.AppendFolder(task_top::global::g_task_folder_);
-  path.AppendFolder(std::to_string(tid));
+  path.AppendFolder(task_top::to_string(tid));
   path.SetFile(task_top::global::g_stat_filename_);
   return GetOneAppOrTaskStatString(path.Pathname(), stat_data);
 }

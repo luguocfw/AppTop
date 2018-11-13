@@ -43,5 +43,7 @@ public:
   static std::string GetThrName(int pid, int tid);
   static std::string GetAppName(int pid);
 };
+int stoi(const std::string &s);
+std::string to_string(int val);
 }
 #endif
