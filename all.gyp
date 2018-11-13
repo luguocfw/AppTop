@@ -14,8 +14,9 @@
       'target_name': 'pro_all',
       'type': 'none',
       'dependencies': [
-        '<(PRO_ROOT)/app_top/app_top.gyp:apptop',
-        '<(PRO_ROOT)/src/src.gyp:libat',
+        '<(PRO_ROOT)/app/app.gyp:tasktop',
+        '<(PRO_ROOT)/lib/lib.gyp:libtt',
+        '<(PRO_ROOT)/base/base.gyp:libttbase',
       ], # dependencies
     },
   ], # targets

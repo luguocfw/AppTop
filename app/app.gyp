@@ -1,7 +1,7 @@
 #
 #
 # author: ChenFawang
-# app_top.gyp
+# app.gyp
 # 2018-11-12
 # mail: cfwang_9984@163.com
 #
@@ -11,16 +11,14 @@
   ],
   'targets':[
     {
-      'target_name': 'apptop',
+      'target_name': 'tasktop',
       'type': 'executable',
       'sources':[
-        'main.c',
-      ],
-      'include_dirs': [
-        '<(PRO_ROOT)/include',
+        'main.cc',
       ],
       'dependencies': [
-        '<(PRO_ROOT)/src/src.gyp:libat',
+        '<(PRO_ROOT)/lib/lib.gyp:libtt',
+        '<(PRO_ROOT)/base/base.gyp:libttbase',
       ], # dependencies
     },
   ], # targets
