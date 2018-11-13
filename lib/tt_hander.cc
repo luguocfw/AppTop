@@ -59,13 +59,13 @@ bool TaskTopHandler::GetAllStat(SystemStatData & sys_stat, std::list<AppStatAll>
     return false;
   }
   for (auto app = apps_stat_str.begin(); app != apps_stat_str.end(); app++) {
-    AppAndTaskStatData app_stat_data;
-    ret = task_top::AppAndTaskStatResolv::Resolv(app->stat_str, app_stat_data);
+    AppStatAll app_stat;
+    app_stat.pid = app->pid;
+    ret = task_top::AppAndTaskStatResolv::Resolv(app->stat_str, app_stat.app_stat);
     if (ret != 0) {
       LogError("resolv app(pid:%d) stat string failed:%d\n",app->pid, ret);
       continue;
     }
-    AppStatAll app_stat;
     app_stat.tasks_stat.clear();
     for (auto task = app->thrs_stat.begin(); task != app->thrs_stat.end(); task++) {
       AppAndTaskStatData task_stat_data;

@@ -128,6 +128,10 @@ std::string AppTaskScan::GetThrName(int pid, int tid) {
   std::stringstream ss;
   ss << ifs.rdbuf();
   std::string name = ss.str();
+  int addr = name.find("\n");
+  if(addr != std::string::npos){
+    name = name.substr(0,addr);
+  }
   return name;
 }
 std::string AppTaskScan::GetAppName(int pid) {
@@ -141,6 +145,10 @@ std::string AppTaskScan::GetAppName(int pid) {
   std::stringstream ss;
   ss << ifs.rdbuf();
   std::string name = ss.str();
+  int addr = name.find("\n");
+  if(addr != std::string::npos){
+    name = name.substr(0,addr);
+  }
   return name;
 }
 int stoi(const std::string & s) {
