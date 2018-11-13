@@ -15,6 +15,7 @@
     ],
     'cflags':[
       '-fPIC',
+      '-std=c++11',
     ],
     'conditions': [
       ['build_type=="debug"',{
