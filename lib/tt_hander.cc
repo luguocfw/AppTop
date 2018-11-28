@@ -49,10 +49,16 @@ bool TaskTopHandler::GetAllStat(SystemStatData & sys_stat, std::list<AppStatAll>
   memset(&sys_stat, 0, sizeof(SystemStatData));
   apps_stat.clear();
   std::string sys_stat_str;
+  std::ifstream system_stat_ifs;
   std::list<AppStatStrAll> apps_stat_str;
-  if (!GetAllStatString(pids, sys_stat_str, apps_stat_str)) {
+  if (!OpenAllStatFile(pids, system_stat_ifs, apps_stat_str)) {
     return false;
   }
+  if (!GetAllStatString(sys_stat_str, system_stat_ifs, apps_stat_str)) {
+    CloseAllStatFile(system_stat_ifs, apps_stat_str);
+    return false;
+  }
+  CloseAllStatFile(system_stat_ifs, apps_stat_str);
   ret = task_top::SystemStatResolv::Resolv(sys_stat_str, sys_stat);
   if (ret != 0) {
     LogError("resolv system stat string failed\n");
@@ -132,8 +138,9 @@ void TaskTopHandler::GetAllCpu(std::list<AppCpuInfoAll>& infos_out, SystemCpuInf
   apps_stat_.clear();
   apps_stat_ = apps_stat_in;
 }
-bool TaskTopHandler::GetAllStatString(std::list<int>& pids, std::string & sys_stat_str, std::list<AppStatStrAll>& apps_stat_str) {
-  if (!GetSystemStatString(sys_stat_str)) {
+bool TaskTopHandler::OpenAllStatFile(std::list<int>& pids, std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str) {
+  sys_stat_ifs.open(task_top::global::g_system_stat_path_, std::ios::in);
+  if (!sys_stat_ifs.is_open()) {
     return false;
   }
   int ret;
@@ -141,8 +148,14 @@ bool TaskTopHandler::GetAllStatString(std::list<int>& pids, std::string & sys_st
   for (auto pid = pids.begin(); pid != pids.end();) {
     AppStatStrAll app_stat_str;
     app_stat_str.pid = *pid;
-    if (!GetOneAppStatString(app_stat_str.pid, app_stat_str.stat_str)) {
-      LogError("pid: %d exe get stat info failed", *pid);
+    Path path(task_top::global::g_system_proc_path_);
+    path.AppendFolder(task_top::to_string(app_stat_str.pid));
+    path.SetFile(task_top::global::g_stat_filename_);
+    app_stat_str.ifs = new std::ifstream();
+    app_stat_str.ifs->open(path.Pathname(), std::ios::in);
+    if (!app_stat_str.ifs->is_open()) {
+      LogError("open stat file:%s failed\n", path.Pathname().c_str());
+      delete app_stat_str.ifs;
       pid = pids.erase(pid);
       continue;
     }
@@ -156,60 +169,87 @@ bool TaskTopHandler::GetAllStatString(std::list<int>& pids, std::string & sys_st
     for (auto tid = tids.begin(); tid != tids.end(); tid++) {
       TaskStatStr task_stat;
       task_stat.tid = *tid;
-      if (!GetOneTaskStatString(app_stat_str.pid, task_stat.tid, task_stat.stat_str)) {
+      Path tid_path(task_top::global::g_system_proc_path_);
+      tid_path.AppendFolder(task_top::to_string(app_stat_str.pid));
+      tid_path.AppendFolder(task_top::global::g_task_folder_);
+      tid_path.AppendFolder(task_top::to_string(task_stat.tid));
+      tid_path.SetFile(task_top::global::g_stat_filename_);
+      task_stat.ifs = new std::ifstream();
+      task_stat.ifs->open(tid_path.Pathname(), std::ios::in);
+      if (!task_stat.ifs->is_open()) {
+        LogError("open tid stat file %s failed\n", tid_path.Pathname().c_str());
+        delete task_stat.ifs;
         continue;
       }
       app_stat_str.thrs_stat.push_back(task_stat);
     }
-    if (tids.size() == 0) {
-      LogError("pid:%d tids num is zero\n", *pid);
+    if (app_stat_str.thrs_stat.size() == 0) {
+      delete app_stat_str.ifs;
       pid = pids.erase(pid);
       continue;
     }
     apps_stat_str.push_back(app_stat_str);
     pid++;
   }
-  if (apps_stat_str.size() <= 0) {
+  if (apps_stat_str.size() == 0) {
+    sys_stat_ifs.close();
     return false;
   }
   return true;
 }
-bool TaskTopHandler::GetSystemStatString(std::string & stat_data) {
-  std::ifstream ifs(task_top::global::g_system_stat_path_, std::ios::in);
-  if (!ifs.is_open()) {
-    LogError("open cpu stat file: %s failed\n", task_top::global::g_system_proc_path_.c_str());
+bool TaskTopHandler::GetAllStatString(std::string & sys_stat_str, std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str) {
+  if (!GetSystemStatString(sys_stat_ifs, sys_stat_str)) {
     return false;
   }
+  for (auto app = apps_stat_str.begin(); app != apps_stat_str.end();) {
+    if (!GetOneAppOrTaskStatString(*app->ifs, app->stat_str)) {
+      app->ifs->close();
+      delete app->ifs;
+      app = apps_stat_str.erase(app);
+      continue;
+    }
+    for (auto thread = app->thrs_stat.begin(); thread != app->thrs_stat.end();) {
+      if (!GetOneAppOrTaskStatString(*thread->ifs, thread->stat_str)) {
+        thread->ifs->close();
+        delete thread->ifs;
+        thread = app->thrs_stat.erase(thread);
+        continue;
+      }
+      thread++;
+    }
+    if (app->thrs_stat.size() == 0) {
+      app->ifs->close();
+      delete app->ifs;
+      app = apps_stat_str.erase(app);
+      continue;
+    }
+    app++;
+  }
+  if (apps_stat_str.size() == 0) {
+    return false;
+  }
+  return true;
+}
+void TaskTopHandler::CloseAllStatFile(std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str) {
+  sys_stat_ifs.close();
+  for (auto app = apps_stat_str.begin(); app != apps_stat_str.end(); app++) {
+    app->ifs->close();
+    delete app->ifs;
+    for (auto tid = app->thrs_stat.begin(); tid != app->thrs_stat.end(); tid++) {
+      tid->ifs->close();
+      delete tid->ifs;
+    }
+  }
+}
+bool TaskTopHandler::GetSystemStatString(std::ifstream &ifs,std::string & stat_data) {
   if (!std::getline(ifs, stat_data)) {
     LogError("get file %s one line string failed\n", task_top::global::g_system_proc_path_.c_str());
-    ifs.close();
     return false;
   }
-  ifs.close();
   return true;
 }
-bool TaskTopHandler::GetOneAppStatString(int pid, std::string & stat_data) {
-  Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(task_top::to_string(pid));
-  path.SetFile(task_top::global::g_stat_filename_);
-  return GetOneAppOrTaskStatString(path.Pathname(), stat_data);
-}
-bool TaskTopHandler::GetOneTaskStatString(int pid, int tid, std::string & stat_data) {
-  Path path(task_top::global::g_system_proc_path_);
-  path.AppendFolder(task_top::to_string(pid));
-  path.AppendFolder(task_top::global::g_task_folder_);
-  path.AppendFolder(task_top::to_string(tid));
-  path.SetFile(task_top::global::g_stat_filename_);
-  return GetOneAppOrTaskStatString(path.Pathname(), stat_data);
-}
-bool TaskTopHandler::GetOneAppOrTaskStatString(const std::string & stat_path, std::string & stat_data) {
-  std::ifstream ifs(stat_path);
-  if (!ifs.is_open()) {
-    LogError("open file: %s failed\n", stat_path.c_str());
-    return false;
-  }
+bool TaskTopHandler::GetOneAppOrTaskStatString(std::ifstream &ifs, std::string & stat_data) {
   if (!std::getline(ifs, stat_data)) {
-    ifs.close();
     return false;
   }
   return true;

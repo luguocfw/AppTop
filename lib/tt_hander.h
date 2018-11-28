@@ -10,6 +10,9 @@
 #define __TT_HANDLER_H__
 #include "tt_utils.h"
 #include <list>
+#include <stdio.h>
+#include <fstream>
+#include <memory>
 namespace task_top {
 typedef struct {
   float               utime;
@@ -49,12 +52,14 @@ typedef struct {
 } SystemCpuInfo;
 
 typedef struct {
-  int               tid;
-  std::string       stat_str;
+  int              tid;
+  std::ifstream    *ifs;
+  std::string      stat_str;
 }TaskStatStr;
 
 typedef struct {
   int                       pid;
+  std::ifstream             *ifs;
   std::string               stat_str;
   std::list<TaskStatStr>    thrs_stat;
 }AppStatStrAll;
@@ -69,11 +74,11 @@ public:
 private:
   bool GetAllStat(SystemStatData &sys_stat, std::list<AppStatAll> &apps_stat, std::list<int> &pids);
   void GetAllCpu(std::list<AppCpuInfoAll> &infos_out, SystemCpuInfo &sys_info_out, SystemStatData &sys_stat_in, std::list<AppStatAll> &apps_stat_in);
-  bool GetAllStatString(std::list<int>& pids, std::string & sys_stat_str, std::list<AppStatStrAll>& apps_stat_str);
-  bool GetSystemStatString(std::string &stat_data);
-  bool GetOneAppStatString(int pid, std::string &stat_data);
-  bool GetOneTaskStatString(int pid, int tid, std::string &stat_data);
-  bool GetOneAppOrTaskStatString(const std::string &stat_path, std::string &stat_data);
+  bool OpenAllStatFile(std::list<int>& pids, std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str);
+  bool GetAllStatString(std::string & sys_stat_str, std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str);
+  void CloseAllStatFile(std::ifstream & sys_stat_ifs, std::list<AppStatStrAll>& apps_stat_str);
+  bool GetSystemStatString(std::ifstream &ifs, std::string & stat_data);
+  bool GetOneAppOrTaskStatString(std::ifstream &ifs, std::string & stat_data);
   bool GetOldAppStatData(int pid, AppAndTaskStatData &old_stat);
   bool GetOldTaskStatData(int pid, int tid, AppAndTaskStatData &old_stat);
   void GetAppCpuInfo(int pid, AppAndTaskStatData& cur_stat_data, int total_diff, AppAndTaskCpuInfo &cpu_info);
