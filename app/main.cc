@@ -42,12 +42,12 @@ void DisplayCpuInfo(task_top::SystemCpuInfo &sys_cpu, std::list<task_top::AppCpu
     printf("PID\t\tNAME\t\tCPU\n");
     for (auto app = apps_cpu.begin(); app != apps_cpu.end(); app++) {
       printf("%d\t\t%s\t\t%.2f%%\n", app->pid, app->name.c_str(),
-        (app->app_cpu.cstime + app->app_cpu.cutime + app->app_cpu.stime + app->app_cpu.utime));
+        (app->app_cpu.cstime + app->app_cpu.cutime + app->app_cpu.stime + app->app_cpu.utime) * 100);
       if (app->task.size() != 0) {
         printf("\t\t    TID\t\tNAME\t\tCPU\n");
         for (auto task = app->task.begin(); task != app->task.end(); task++) {
           printf("\t\t|---%d\t\t%s\t\t%.2f%%\n", task->tid, task->name.c_str(),
-            (task->cpu.cstime + task->cpu.cutime + task->cpu.stime + task->cpu.utime));
+            (task->cpu.cstime + task->cpu.cutime + task->cpu.stime + task->cpu.utime) * 100);
         }
       }
     }
